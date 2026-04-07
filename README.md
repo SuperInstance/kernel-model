@@ -1,93 +1,39 @@
-# Kernel Model
-## A Context-Aware Agent Runtime
+# Kernel Model: An Agent That Wears Your Clothes
 
-Most agents are built for a single environment, user, or task. Adapting them requires significant rework.
+You don't configure this agent. It looks around when it wakes up, sees who you are and where it's running, and puts on the right clothes. No setup wizards. No long list of environment variables. Just a tiny kernel that dresses itself.
 
-The kernel model explores a different approach: a minimal, stable core runtime that dynamically adapts its interfaces and capabilities based on context—who is using it, where it runs, and what it's asked to do.
+**Live Demo:** [https://kernel-model.casey-digennaro.workers.dev](https://kernel-model.casey-digennaro.workers.dev)
 
----
+## Why This Exists
 
-### Why It Exists
+Most agent platforms require you to rebuild your logic for each new context. This kernel separates the core runtime from its capabilities. You define the capabilities once as plain "clothing" layers; the kernel wears what fits the current situation. The same agent can help with code at work and tasks at home without rewriting its foundation.
 
-Operating system kernels don't ship pre-built for one machine or user. They probe their environment at boot and load the necessary drivers. This project applies a similar principle to agent runtimes: a small core that discovers and loads the appropriate "clothing" for its context.
+## How It Works
 
-### Overview
+The kernel performs four steps when a request arrives:
+1.  **Detects** the environment (Cloudflare Worker, local, browser) and request type.
+2.  **Boots** an identity queue, loading only the layers relevant to this context.
+3.  **Routes** the request through the active layers.
+4.  **Tracks** simple in-memory state changes for the session.
 
-The core runtime is approximately 500 lines. It performs four functions:
+Everything else—tools, interfaces, personality—is defined in the `/src/layers` folder using plain JavaScript files. There is no plugin system; you just edit files.
 
-1. **Detect** – Identify environment, permissions, and user
-2. **Boot** – Load identity, work queue, and required equipment modules
-3. **Think** – Route tasks to appropriate models and strategies
-4. **Act** – Execute changes, report state, and coordinate work
+## Quick Start
 
-Everything else is dynamically loaded as "clothing" based on context.
+1.  **Fork this repository.** This project is designed to be owned and modified.
+2.  ️ **Deploy with Cloudflare Workers.** It will be live in under a minute with zero dependencies.
+3.  **Add your layers.** Edit or create files in `/src/layers`. This is your entire setup.
 
-```
-┌─────────────────────────────────────────┐
-│            KERNEL (core runtime)        │
-│                                         │
-│  detect() → environment, permissions    │
-│  boot()   → identity, queue, equipment  │
-│  think()  → model routing, strategy     │
-│  act()    → operations, state changes   │
-│                                         │
-├─────────────────────────────────────────┤
-│            CLOTHING LAYERS              │
-│                                         │
-│  Interface layer (TUI/CLI/Web/API)      │
-│  Domain layer (study/make/business)     │
-│  Equipment layer (tools, capabilities)  │
-│  Creator layer (user profiles)          │
-│  Environment layer (local/cloud/edge)   │
-│                                         │
-└─────────────────────────────────────────┘
-```
+## What It Does
 
-### Clothing Layers
+*   **Context Boot:** Probes available environment variables and permissions on startup to load relevant layers.
+*   **Adaptive Interface:** Serves a simple web UI for browser requests and a JSON API for programmatic calls.
+*   **Domain-Specific Layers:** You create layers for development, study, or personal tasks. The kernel activates them based on context.
+*   **Portable Runtime:** The same ~500 lines of code run on Cloudflare Workers, locally, or other edge platforms.
+*   **Fork-First Design:** MIT licensed. No accounts, lock-in, or external dependencies.
 
-The kernel probes its context and loads appropriate layers automatically.
+## One Specific Limitation
 
-**Interface Clothing** – Adapts to user and environment:
-- Young student → Web UI
-- Professional developer → TUI in development environment
-- Enterprise admin → CLI and API
-- Field operator → SSH/tmux session
-- Maker → Desktop with multiple tools
+The kernel's state is ephemeral and stored only in memory per instance. It does not include a persistent storage layer out of the box; each deployment starts with a clean slate unless you add that capability yourself.
 
-**Domain Clothing** – Loads equipment for the current work domain:
-- Study → Research and note-taking tools
-- Development → Git, code editors, linters
-- Business → Analytics, reporting, automation
-
-### Quick Start
-
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/your-org/kernel-model.git
-   cd kernel-model
-   ```
-
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-
-3. Run the kernel:
-   ```bash
-   npm start
-   ```
-
-The kernel will probe your environment and load appropriate clothing layers.
-
-### Limitations
-
-The current implementation requires a Node.js environment and internet access for initial module loading. Offline operation is limited to previously cached clothing layers.
-
----
-
-<div>
-  Part of the <a href="https://the-fleet.casey-digennaro.workers.dev">Cocapn Fleet</a>.
-  Learn more at <a href="https://cocapn.ai">cocapn.ai</a>.
-</div>
-
-Attribution: Superinstance & Lucineer (DiGennaro et al.). Licensed under MIT.
+<div style="text-align:center;padding:16px;color:#64748b;font-size:.8rem"><a href="https://the-fleet.casey-digennaro.workers.dev" style="color:#64748b">The Fleet</a> &middot; <a href="https://cocapn.ai" style="color:#64748b">Cocapn</a></div>
